@@ -5,11 +5,35 @@ import {
 } from "@excalidraw/excalidraw/components/icons";
 import { LinkButton } from "@excalidraw/excalidraw/components/LinkButton";
 import { useUIAppState } from "@excalidraw/excalidraw/context/ui-appState";
+import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
+import {
+  makeSimpleSignetArchitecture,
+  makeSignetOrderLifecycle,
+} from "../signetDiagrams";
 
 import "./AppSidebar.scss";
 
-export const AppSidebar = () => {
+type AppSidebarProps = {
+  excalidrawAPI?: ExcalidrawImperativeAPI;
+};
+
+export const AppSidebar = ({ excalidrawAPI }: AppSidebarProps) => {
   const { theme, openSidebar } = useUIAppState();
+
+  const insertDiagram = (
+    elementsFactory: () => ReturnType<typeof makeSimpleSignetArchitecture>,
+  ) => {
+    if (!excalidrawAPI) {
+      return;
+    }
+
+    const currentElements = excalidrawAPI.getSceneElements();
+    const nextElements = elementsFactory();
+
+    excalidrawAPI.updateScene({
+      elements: [...currentElements, ...nextElements],
+    });
+  };
 
   return (
     <DefaultSidebar>
@@ -72,6 +96,22 @@ export const AppSidebar = () => {
           >
             Sign up now
           </LinkButton>
+        </div>
+        <div className="mt-3 flex column">
+          <button
+            className="excalidraw-button"
+            type="button"
+            onClick={() => insertDiagram(makeSimpleSignetArchitecture)}
+          >
+            Insert: Signet Architecture
+          </button>
+          <button
+            className="excalidraw-button mt-2"
+            type="button"
+            onClick={() => insertDiagram(makeSignetOrderLifecycle)}
+          >
+            Insert: Signet Order Lifecycle
+          </button>
         </div>
       </Sidebar.Tab>
     </DefaultSidebar>
