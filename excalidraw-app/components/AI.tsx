@@ -7,16 +7,118 @@ import {
 } from "@excalidraw/excalidraw";
 import { getDataURL } from "@excalidraw/excalidraw/data/blob";
 import { safelyParseJSON } from "@excalidraw/common";
+import { useCallback, useMemo, useState } from "react";
 
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
+
+import { generateTsDiagram } from "../data/tsDiagramGenerator";
 
 export const AIComponents = ({
   excalidrawAPI,
 }: {
   excalidrawAPI: ExcalidrawImperativeAPI;
 }) => {
+  const [tsFilePath, setTsFilePath] = useState("");
+  const [isGeneratingDiagram, setIsGeneratingDiagram] = useState(false);
+  const [diagramError, setDiagramError] = useState<string | null>(null);
+
+  const diagramOrigin = useMemo(() => {
+    const state = excalidrawAPI.getAppState();
+
+    const zoom = state.zoom.value || 1;
+    const centerX = -state.scrollX + state.width / 2 / zoom;
+    const centerY = -state.scrollY + state.height / 2 / zoom;
+
+    return { x: centerX, y: centerY };
+  }, [excalidrawAPI]);
+
+  const handleGenerateDiagram = useCallback(async () => {
+    if (!tsFilePath.trim()) {
+      setDiagramError("Please paste a TypeScript file path first.");
+      return;
+    }
+
+    setIsGeneratingDiagram(true);
+    setDiagramError(null);
+
+    try {
+      const { elements } = await generateTsDiagram(tsFilePath.trim(), {
+        origin: diagramOrigin,
+      });
+
+      const existingElements = excalidrawAPI.getSceneElements();
+
+      excalidrawAPI.updateScene({
+        elements: [...existingElements, ...elements],
+      });
+    } catch (error: any) {
+      setDiagramError(error.message || "Unable to generate diagram.");
+    } finally {
+      setIsGeneratingDiagram(false);
+    }
+  }, [diagramOrigin, excalidrawAPI, tsFilePath]);
+
   return (
     <>
+      <div
+        style={{
+          position: "fixed",
+          bottom: 16,
+          right: 16,
+          zIndex: 10,
+          background: "var(--color-surface-primary, #fff)",
+          color: "inherit",
+          padding: "12px 16px",
+          borderRadius: 8,
+          boxShadow: "0 6px 18px rgba(0, 0, 0, 0.12)",
+          maxWidth: 360,
+          width: "100%",
+        }}
+      >
+        <label
+          style={{
+            display: "block",
+            marginBottom: 8,
+            fontWeight: 600,
+          }}
+        >
+          Generate TS diagram
+        </label>
+        <input
+          type="text"
+          placeholder="/src/path/to/file.ts"
+          value={tsFilePath}
+          onChange={(event) => setTsFilePath(event.target.value)}
+          style={{
+            width: "100%",
+            padding: "8px 10px",
+            borderRadius: 6,
+            border: "1px solid var(--color-border-primary, #ccc)",
+            marginBottom: 8,
+          }}
+        />
+        <button
+          type="button"
+          onClick={handleGenerateDiagram}
+          disabled={isGeneratingDiagram}
+          style={{
+            width: "100%",
+            padding: "10px 12px",
+            borderRadius: 6,
+            border: "none",
+            cursor: isGeneratingDiagram ? "not-allowed" : "pointer",
+            background: "var(--color-primary, #6965db)",
+            color: "#fff",
+            fontWeight: 600,
+          }}
+        >
+          {isGeneratingDiagram ? "Generating…" : "Build diagram"}
+        </button>
+        {diagramError && (
+          <div style={{ color: "#c62828", marginTop: 8 }}>{diagramError}</div>
+        )}
+      </div>
+
       <DiagramToCodePlugin
         generate={async ({ frame, children }) => {
           const appState = excalidrawAPI.getAppState();
