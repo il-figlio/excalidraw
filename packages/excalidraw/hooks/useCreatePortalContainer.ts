@@ -24,7 +24,14 @@ export const useCreatePortalContainer = (opts?: {
         "excalidraw--mobile",
         editorInterface.formFactor === "phone",
       );
-      div.classList.toggle("theme--dark", theme === THEME.DARK);
+
+      Array.from(div.classList)
+        .filter((className) => className.startsWith("theme--"))
+        .forEach((className) => div.classList.remove(className));
+
+      if (theme !== THEME.LIGHT) {
+        div.classList.add(`theme--${theme}`);
+      }
     }
   }, [div, theme, editorInterface.formFactor, opts?.className]);
 

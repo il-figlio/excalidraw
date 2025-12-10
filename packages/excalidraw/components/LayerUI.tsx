@@ -62,6 +62,7 @@ import { ImageExportDialog } from "./ImageExportDialog";
 import { Island } from "./Island";
 import { JSONExportDialog } from "./JSONExportDialog";
 import { LaserPointerButton } from "./LaserPointerButton";
+import { ThemeToggle } from "./ThemeToggle";
 
 import "./LayerUI.scss";
 import "./Toolbar.scss";
@@ -415,6 +416,10 @@ const LayerUI = ({
                 userToFollow={appState.userToFollow?.socketId || null}
               />
             )}
+            <ThemeToggle
+              theme={appState.theme}
+              onChange={(theme) => setAppState({ theme })}
+            />
             {renderTopRightUI?.(
               editorInterface.formFactor === "phone",
               appState,

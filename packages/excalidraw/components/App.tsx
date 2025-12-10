@@ -2837,6 +2837,22 @@ class App extends React.Component<AppProps, AppState> {
     this.reconcileStylesPanelMode(this.editorInterface);
   };
 
+  private syncThemeClassWithContainer = (theme: AppState["theme"]) => {
+    const container = this.excalidrawContainerRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    Array.from(container.classList)
+      .filter((className) => className.startsWith("theme--"))
+      .forEach((className) => container.classList.remove(className));
+
+    if (theme !== THEME.LIGHT) {
+      container.classList.add(`theme--${theme}`);
+    }
+  };
+
   private clearImageShapeCache(filesMap?: BinaryFiles) {
     const files = filesMap ?? this.files;
     this.scene.getNonDeletedElements().forEach((element) => {
@@ -2851,6 +2867,8 @@ class App extends React.Component<AppProps, AppState> {
     this.unmounted = false;
     this.excalidrawContainerValue.container =
       this.excalidrawContainerRef.current;
+
+    this.syncThemeClassWithContainer(this.state.theme);
 
     if (isTestEnv() || isDevEnv()) {
       const setState = this.setState.bind(this);
@@ -3222,10 +3240,7 @@ class App extends React.Component<AppProps, AppState> {
       this.setState({ theme: this.props.theme });
     }
 
-    this.excalidrawContainerRef.current?.classList.toggle(
-      "theme--dark",
-      this.state.theme === THEME.DARK,
-    );
+    this.syncThemeClassWithContainer(this.state.theme);
 
     if (
       this.state.selectedLinearElement?.isEditing &&
