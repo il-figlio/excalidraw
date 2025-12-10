@@ -33,6 +33,25 @@
       }
     }
 
+    .ThemeToggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: var(--ui-font);
+      font-size: 0.875rem;
+      color: var(--text-primary-color);
+
+      &__select {
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--border-radius-md);
+        border: 1px solid var(--default-border-color);
+        background: var(--island-bg-color);
+        color: inherit;
+        font-family: inherit;
+        font-size: inherit;
+      }
+    }
+
     &__footer {
       width: 100%;
 

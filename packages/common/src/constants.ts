@@ -178,10 +178,14 @@ export const getFontFamilyFallbacks = (
   }
 };
 
-export const THEME = {
+export type ThemeName = "light" | "dark" | "signet" | "cash-app";
+
+export const THEME: Record<Uppercase<Exclude<ThemeName, "cash-app"> | "CASH_APP">, ThemeName> = {
   LIGHT: "light",
   DARK: "dark",
-} as const;
+  SIGNET: "signet",
+  CASH_APP: "cash-app",
+};
 
 export const FRAME_STYLE = {
   strokeColor: "#bbb" as ExcalidrawElement["strokeColor"],
